@@ -9,6 +9,7 @@ import java.io.StringWriter;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.view.View;
@@ -43,6 +44,8 @@ public class MainActivity extends Activity implements OnClickListener {
 
 		bt.setOnClickListener(this);
 		bt_datachmod.setOnClickListener(this);
+		
+		getSystemInfo();
 	}
 
 	@Override
@@ -265,6 +268,20 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	}
 	
-	
+	public void getSystemInfo(){
+		System.err.println(Environment.getExternalStorageDirectory().getAbsolutePath());
+		System.err.println((Environment.getExternalStorageDirectory().getTotalSpace()/1024/1024)/1024.0);
+		System.err.println((Environment.getExternalStorageDirectory().getUsableSpace()/1024/1024)/1024.0);
+		System.err.println((Environment.getExternalStorageDirectory().getFreeSpace()/1024/1024)/1024.0);
+		
+		StringBuilder sb = new StringBuilder();
+		String sdpath = Environment.getExternalStorageDirectory().getAbsolutePath();
+		String totalspace =String.valueOf((Environment.getExternalStorageDirectory().getTotalSpace()/1024/1024)/1024.0) ;
+		String freespace = String.valueOf((Environment.getExternalStorageDirectory().getUsableSpace()/1024/1024)/1024.0);
+		sb.append("当前的SD路径:"+sdpath+",");
+		sb.append("总的大小"+totalspace+"G,");
+		sb.append("可用大小"+freespace+"G");
+		((TextView) findViewById(R.id.textView_ShowSystemInfo)).setText(sb.toString());
+	}
 
 }
