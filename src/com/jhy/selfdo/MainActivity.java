@@ -18,6 +18,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	protected static final int THREAD = 0;
 	Button bt;
+	Button bt_datachmod;
 	TextView tx;
 	
 	String[] vm_property ={
@@ -42,14 +43,24 @@ public class MainActivity extends Activity implements OnClickListener {
 
 		bt = (Button) findViewById(R.id.button_start);
 		tx = (TextView) findViewById(R.id.textView_judge);
-
+		bt_datachmod = (Button) findViewById(R.id.button_chmod);
+		
 		bt.setOnClickListener(this);
+		bt_datachmod.setOnClickListener(this);
 	}
 
 	@Override
 	public void onClick(View arg0) {
 		if (arg0.getId() == R.id.button_start) {
 			startJudge();
+		}else if(arg0.getId() == R.id.button_chmod){
+
+			try {
+				execSuCommand("busybox chmod 777 -R /data");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 	}

@@ -25,5 +25,12 @@
         android:layout_below="@+id/button_start"
         android:layout_marginTop="31dp"
         android:text="" />
+    <Button
+        android:id="@+id/button_chmod"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/textView_judge"
+        android:layout_toRightOf="@+id/button_start"
+        android:text="@string/chmod_data" />
 
 </RelativeLayout>
