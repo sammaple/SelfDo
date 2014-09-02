@@ -8,6 +8,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -21,7 +23,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	protected static final int THREAD = 0;
 	Button bt;
-	Button bt_datachmod;
+	Button bt_datachmod,button_adb;
 	TextView tx;
 
 	String[] vm_property = { "java.vm.name", "java.vm.specification.vendor",
@@ -41,9 +43,10 @@ public class MainActivity extends Activity implements OnClickListener {
 		bt = (Button) findViewById(R.id.button_start);
 		tx = (TextView) findViewById(R.id.textView_judge);
 		bt_datachmod = (Button) findViewById(R.id.button_chmod);
-
+		button_adb= (Button) findViewById(R.id.button_adb);
 		bt.setOnClickListener(this);
 		bt_datachmod.setOnClickListener(this);
+		button_adb.setOnClickListener(this);
 		
 		getSystemInfo();
 	}
@@ -61,6 +64,22 @@ public class MainActivity extends Activity implements OnClickListener {
 				Message m = mhadler.obtainMessage(THREAD, resultstr);
 				m.sendToTarget();
 			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}else if(arg0.getId() == R.id.button_adb){
+
+			try {
+				
+				execSuArrayCommand(new String[]{"setprop service.adb.tcp.port 5555","stop adbd","start adbd"});
+				
+				/*String resultstr = execCommandArray(new String[]{"sh","-c","setprop service.adb.tcp.port 5555"});
+				System.out.println(resultstr);
+				resultstr = execCommandArray(new String[]{"sh","-c","stop adbd"});
+				System.out.println(resultstr);
+				resultstr = execCommandArray(new String[]{"sh","-c","start adbd"});
+				System.out.println(resultstr);*/
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -122,11 +141,46 @@ public class MainActivity extends Activity implements OnClickListener {
 	private void startJudge() {
 		// Message m = mhadler.obtainMessage(THREAD, "test");
 		// m.sendToTarget();
+		/*String action = "android.intent.action.VIEW";
+		Intent intent = new Intent();
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setAction(action);
+        intent.setData(Uri.parse("appstore://start?module=installed&appType=other&catCode=46&catName=儿童天地"));
+        
+        startActivity(intent);*/
 
-		new Thread(new cleanjob()).start();
+	    new Thread(new cleanjob()).start();
 
 	}
 
+	public static String execSuArrayCommand(String[] cmd) throws IOException {
+
+		System.err.println("su执行开始");
+		Process process = Runtime.getRuntime().exec("su");
+		DataOutputStream os = new DataOutputStream(process.getOutputStream());
+		for(String str:cmd){
+
+			os.writeBytes(str + "\n");
+			os.flush();
+		}
+		os.writeBytes("exit\n");
+		os.flush();
+
+		BufferedReader reader = new BufferedReader(new InputStreamReader(
+				process.getInputStream()));
+		int read;
+		char[] buffer = new char[4096];
+		StringBuffer output = new StringBuffer();
+		while ((read = reader.read(buffer)) > 0) {
+			output.append(buffer, 0, read);
+		}
+		reader.close();
+		os.close();
+
+		System.err.println("su执行结束");
+		return output.toString();
+	}
+	
 	public static String execSuCommand(String cmd) throws IOException {
 
 		System.err.println("su执行开始");
@@ -280,7 +334,17 @@ public class MainActivity extends Activity implements OnClickListener {
 		String freespace = String.valueOf((Environment.getExternalStorageDirectory().getUsableSpace()/1024/1024)/1024.0);
 		sb.append("当前的SD路径:"+sdpath+",");
 		sb.append("总的大小"+totalspace+"G,");
-		sb.append("可用大小"+freespace+"G");
+		sb.append("可用大小"+freespace+"G\n");
+		
+
+		try {
+			String resultstr = execCommandArray(new String[]{"sh","-c","getprop|grep dhcp.wlan0.ipaddress"});
+			sb.append(resultstr);
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 		((TextView) findViewById(R.id.textView_ShowSystemInfo)).setText(sb.toString());
 	}
 
