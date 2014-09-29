@@ -23,8 +23,8 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	protected static final int THREAD = 0;
 	Button bt;
-	Button bt_datachmod,button_adb;
-	TextView tx;
+	Button bt_datachmod, button_adb, button_mac;
+	TextView tx, editText_mac;
 
 	String[] vm_property = { "java.vm.name", "java.vm.specification.vendor",
 			"java.vm.vendor", "java.vm.specification.name",
@@ -43,11 +43,16 @@ public class MainActivity extends Activity implements OnClickListener {
 		bt = (Button) findViewById(R.id.button_start);
 		tx = (TextView) findViewById(R.id.textView_judge);
 		bt_datachmod = (Button) findViewById(R.id.button_chmod);
-		button_adb= (Button) findViewById(R.id.button_adb);
+		button_adb = (Button) findViewById(R.id.button_adb);
 		bt.setOnClickListener(this);
 		bt_datachmod.setOnClickListener(this);
 		button_adb.setOnClickListener(this);
-		
+
+		editText_mac = (TextView) findViewById(R.id.editText_mac);
+
+		button_mac = (Button) findViewById(R.id.button_mac);
+		button_mac.setOnClickListener(this);
+
 		getSystemInfo();
 	}
 
@@ -60,24 +65,65 @@ public class MainActivity extends Activity implements OnClickListener {
 			try {
 				execSuCommand("busybox chmod 777 -R /data");
 				// String[]{"sh","-c","getprop|grep ip"});
-				String resultstr = execCommandArray(new String[]{"sh","-c","ls -al |grep data"});
+				String resultstr = execCommandArray(new String[] { "sh", "-c",
+						"ls -al |grep data" });
 				Message m = mhadler.obtainMessage(THREAD, resultstr);
 				m.sendToTarget();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		}else if(arg0.getId() == R.id.button_adb){
+		} else if (arg0.getId() == R.id.button_adb) {
 
 			try {
+
+				execSuArrayCommand(new String[] {
+						"setprop service.adb.tcp.port 5555", "stop adbd",
+						"start adbd" });
+
+				/*
+				 * String resultstr = execCommandArray(new
+				 * String[]{"sh","-c","setprop service.adb.tcp.port 5555"});
+				 * System.out.println(resultstr); resultstr =
+				 * execCommandArray(new String[]{"sh","-c","stop adbd"});
+				 * System.out.println(resultstr); resultstr =
+				 * execCommandArray(new String[]{"sh","-c","start adbd"});
+				 * System.out.println(resultstr);
+				 */
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else if (arg0.getId() == R.id.button_mac) {
+			try {
+				String str = "busybox ifconfig eth0 hw ether "
+						+ editText_mac.getText();
+
+				/*execCommand("busybox ifconfig eth0 down");
+				execCommand(str);
+				execCommand("busybox ifconfig eth0 up");*/
 				
-				execSuArrayCommand(new String[]{"setprop service.adb.tcp.port 5555","stop adbd","start adbd"});
+				execSuArrayCommand(new String[] {
+						"busybox ifconfig eth0 down", str,
+						"busybox ifconfig eth0 up" });
 				
-				/*String resultstr = execCommandArray(new String[]{"sh","-c","setprop service.adb.tcp.port 5555"});
-				System.out.println(resultstr);
-				resultstr = execCommandArray(new String[]{"sh","-c","stop adbd"});
-				System.out.println(resultstr);
-				resultstr = execCommandArray(new String[]{"sh","-c","start adbd"});
-				System.out.println(resultstr);*/
+
+				/*execSuArrayCommand(new String[] {
+						"busybox ifconfig eth0 down"});*/
+				
+				//execCommandArray(new String[] {"sh","-c","su busybox ifconfig eth0 down"});
+				
+				/*execCommand("su - root");
+				execCommand("busybox ifconfig eth0 down");*/
+				
+				/*
+				 * String resultstr = execCommandArray(new
+				 * String[]{"sh","-c","setprop service.adb.tcp.port 5555"});
+				 * System.out.println(resultstr); resultstr =
+				 * execCommandArray(new String[]{"sh","-c","stop adbd"});
+				 * System.out.println(resultstr); resultstr =
+				 * execCommandArray(new String[]{"sh","-c","start adbd"});
+				 * System.out.println(resultstr);
+				 */
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -118,7 +164,7 @@ public class MainActivity extends Activity implements OnClickListener {
 				String resultstr = execCommand("ls -al /mnt/sdcard/DCIM/.thumbnails");
 				Message m = mhadler.obtainMessage(THREAD, resultstr);
 				m.sendToTarget();
-				
+
 				// execCommand("ls");
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -141,15 +187,17 @@ public class MainActivity extends Activity implements OnClickListener {
 	private void startJudge() {
 		// Message m = mhadler.obtainMessage(THREAD, "test");
 		// m.sendToTarget();
-		/*String action = "android.intent.action.VIEW";
-		Intent intent = new Intent();
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setAction(action);
-        intent.setData(Uri.parse("appstore://start?module=installed&appType=other&catCode=46&catName=儿童天地"));
-        
-        startActivity(intent);*/
+		/*
+		 * String action = "android.intent.action.VIEW"; Intent intent = new
+		 * Intent(); intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		 * intent.setAction(action); intent.setData(Uri.parse(
+		 * "appstore://start?module=installed&appType=other&catCode=46&catName=儿童天地"
+		 * ));
+		 * 
+		 * startActivity(intent);
+		 */
 
-	    new Thread(new cleanjob()).start();
+		new Thread(new cleanjob()).start();
 
 	}
 
@@ -158,7 +206,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		System.err.println("su执行开始");
 		Process process = Runtime.getRuntime().exec("su");
 		DataOutputStream os = new DataOutputStream(process.getOutputStream());
-		for(String str:cmd){
+		for (String str : cmd) {
 
 			os.writeBytes(str + "\n");
 			os.flush();
@@ -180,7 +228,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		System.err.println("su执行结束");
 		return output.toString();
 	}
-	
+
 	public static String execSuCommand(String cmd) throws IOException {
 
 		System.err.println("su执行开始");
@@ -294,7 +342,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
 			} else {
 				System.err.println("execCommandArray结束");
-				
+
 			}
 
 			BufferedReader reader = new BufferedReader(new InputStreamReader(
@@ -321,31 +369,50 @@ public class MainActivity extends Activity implements OnClickListener {
 		}
 
 	}
-	
-	public void getSystemInfo(){
-		System.err.println(Environment.getExternalStorageDirectory().getAbsolutePath());
-		System.err.println((Environment.getExternalStorageDirectory().getTotalSpace()/1024/1024)/1024.0);
-		System.err.println((Environment.getExternalStorageDirectory().getUsableSpace()/1024/1024)/1024.0);
-		System.err.println((Environment.getExternalStorageDirectory().getFreeSpace()/1024/1024)/1024.0);
-		
+
+	public void getSystemInfo() {
+		System.err.println(Environment.getExternalStorageDirectory()
+				.getAbsolutePath());
+		System.err.println((Environment.getExternalStorageDirectory()
+				.getTotalSpace() / 1024 / 1024) / 1024.0);
+		System.err.println((Environment.getExternalStorageDirectory()
+				.getUsableSpace() / 1024 / 1024) / 1024.0);
+		System.err.println((Environment.getExternalStorageDirectory()
+				.getFreeSpace() / 1024 / 1024) / 1024.0);
+
 		StringBuilder sb = new StringBuilder();
-		String sdpath = Environment.getExternalStorageDirectory().getAbsolutePath();
-		String totalspace =String.valueOf((Environment.getExternalStorageDirectory().getTotalSpace()/1024/1024)/1024.0) ;
-		String freespace = String.valueOf((Environment.getExternalStorageDirectory().getUsableSpace()/1024/1024)/1024.0);
-		sb.append("当前的SD路径:"+sdpath+",");
-		sb.append("总的大小"+totalspace+"G,");
-		sb.append("可用大小"+freespace+"G\n");
-		
+		String sdpath = Environment.getExternalStorageDirectory()
+				.getAbsolutePath();
+		String totalspace = String
+				.valueOf((Environment.getExternalStorageDirectory()
+						.getTotalSpace() / 1024 / 1024) / 1024.0);
+		String freespace = String
+				.valueOf((Environment.getExternalStorageDirectory()
+						.getUsableSpace() / 1024 / 1024) / 1024.0);
+		sb.append("当前的SD路径:" + sdpath + ",");
+		sb.append("总的大小" + totalspace + "G,");
+		sb.append("可用大小" + freespace + "G\n");
 
 		try {
-			String resultstr = execCommandArray(new String[]{"sh","-c","getprop|grep dhcp.wlan0.ipaddress"});
+			String resultstr = execCommandArray(new String[] { "sh", "-c",
+					"getprop|grep dhcp.wlan0.ipaddress" });
 			sb.append(resultstr);
-			
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			String resultstr = execCommandArray(new String[] { "sh", "-c",
+					"getprop|grep dhcp.eth0.ipaddress" });
+			sb.append(resultstr);
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
-		((TextView) findViewById(R.id.textView_ShowSystemInfo)).setText(sb.toString());
+		((TextView) findViewById(R.id.textView_ShowSystemInfo)).setText(sb
+				.toString());
 	}
 
 }

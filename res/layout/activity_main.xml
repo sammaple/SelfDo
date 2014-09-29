@@ -41,4 +41,25 @@
         android:layout_toRightOf="@+id/button_chmod"
         android:text="adb5555" />
 
+    <EditText
+        android:id="@+id/editText_mac"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/textView_judge"
+        android:layout_alignBottom="@+id/textView_judge"
+        android:layout_alignParentLeft="true"
+        android:ems="10" 
+        android:text="E8:BB:3D:5F:FC:33">
+
+    </EditText>
+
+    <Button
+        android:id="@+id/button_mac"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/editText_mac"
+        android:layout_marginTop="20dp"
+        android:text="修改MAC地址" />
+
 </RelativeLayout>
