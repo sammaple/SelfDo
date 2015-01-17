@@ -23,8 +23,11 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	protected static final int THREAD = 0;
 	Button bt;
-	Button bt_datachmod, button_adb, button_mac;
+	Button bt_datachmod, button_adb, button_mac,button_sevenup;
 	TextView tx, editText_mac;
+	
+
+	Button bt_hisiadbstart, bt_hisiadbstop,button_hisiled;
 
 	String[] vm_property = { "java.vm.name", "java.vm.specification.vendor",
 			"java.vm.vendor", "java.vm.specification.name",
@@ -44,15 +47,26 @@ public class MainActivity extends Activity implements OnClickListener {
 		tx = (TextView) findViewById(R.id.textView_judge);
 		bt_datachmod = (Button) findViewById(R.id.button_chmod);
 		button_adb = (Button) findViewById(R.id.button_adb);
+		button_sevenup = (Button) findViewById(R.id.button_sevenup);
+		
+		editText_mac = (TextView) findViewById(R.id.editText_mac);
+		button_mac = (Button) findViewById(R.id.button_mac);
+		
+
+		bt_hisiadbstart =  (Button) findViewById(R.id.button_hisiadbstart);
+		bt_hisiadbstop =  (Button) findViewById(R.id.button_hisiadbstop);
+		button_hisiled =  (Button) findViewById(R.id.button_hisiled);
+		
 		bt.setOnClickListener(this);
 		bt_datachmod.setOnClickListener(this);
 		button_adb.setOnClickListener(this);
 
-		editText_mac = (TextView) findViewById(R.id.editText_mac);
-
-		button_mac = (Button) findViewById(R.id.button_mac);
 		button_mac.setOnClickListener(this);
-
+		button_sevenup.setOnClickListener(this);
+		
+		bt_hisiadbstart.setOnClickListener(this);
+		bt_hisiadbstop.setOnClickListener(this);
+		button_hisiled.setOnClickListener(this);
 		getSystemInfo();
 	}
 
@@ -128,7 +142,20 @@ public class MainActivity extends Activity implements OnClickListener {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}else if(arg0.getId() == R.id.button_sevenup){
+			 Uri uri = Uri.parse("http://www.upseven.net:8082/wordpress");  
+			 Intent it = new Intent(Intent.ACTION_VIEW, uri);  
+			 startActivity(it);
+		}else if(arg0.getId() == R.id.button_hisiadbstart){
+			new adb_start_Thread().start();
+		}else if(arg0.getId() == R.id.button_hisiadbstop){
+			new adb_stop_Thread().start();
+		}else if(arg0.getId() == R.id.button_hisiled){
+
+			new led_Thread().start();
 		}
+		
+		
 
 	}
 
@@ -414,5 +441,49 @@ public class MainActivity extends Activity implements OnClickListener {
 		((TextView) findViewById(R.id.textView_ShowSystemInfo)).setText(sb
 				.toString());
 	}
+	
+	///////////////////////////////////海思adb 打开关闭///////////////////////////////////////
+    class adb_start_Thread extends Thread
+    {
+      adb_start_Thread()
+      {
+      }
 
+      public void run()
+      {
+        super.run();
+        SocketClient localSocketClient = new SocketClient();
+        localSocketClient.writeMess("system start adbd ");
+        localSocketClient.readNetResponseSync();
+      }
+    }
+
+    class adb_stop_Thread extends Thread
+    {
+      adb_stop_Thread()
+      {
+      }
+
+      public void run()
+      {
+        super.run();
+        SocketClient localSocketClient = new SocketClient();
+        localSocketClient.writeMess("system stop adbd ");
+        localSocketClient.readNetResponseSync();
+      }
+    }
+    class led_Thread extends Thread
+    {
+    	led_Thread()
+      {
+      }
+
+      public void run()
+      {
+        super.run();
+        SocketClient localSocketClient = new SocketClient();
+        localSocketClient.writeMess("system gpio-led ");
+        localSocketClient.readNetResponseSync();
+      }
+    }
 }

@@ -41,6 +41,14 @@
         android:layout_toRightOf="@+id/button_chmod"
         android:text="adb5555" />
 
+    <Button
+        android:id="@+id/button_sevenup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/textView_judge"
+        android:layout_toRightOf="@+id/button_adb"
+        android:text="七喜" />
+    
     <EditText
         android:id="@+id/editText_mac"
         android:layout_width="wrap_content"
@@ -61,5 +69,41 @@
         android:layout_below="@+id/editText_mac"
         android:layout_marginTop="20dp"
         android:text="修改MAC地址" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/button_mac"
+        android:layout_marginTop="33dp"
+        android:text="海思专区" />
+
+    <Button
+        android:id="@+id/button_hisiadbstart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/textView1"
+        android:layout_marginTop="22dp"
+        android:text="海思打开adb" />
+
+    <Button
+        android:id="@+id/button_hisiadbstop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView1"
+        android:layout_marginTop="23dp"
+        android:layout_toRightOf="@+id/button_mac"
+        android:text="海思关闭adb" />
+
+    <Button
+        android:id="@+id/button_hisiled"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/button_hisiadbstop"
+        android:layout_alignBottom="@+id/button_hisiadbstop"
+        android:layout_toRightOf="@+id/button_chmod"
+        android:text="海思跑马灯" />
 
 </RelativeLayout>
