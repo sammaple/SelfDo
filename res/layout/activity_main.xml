@@ -103,7 +103,15 @@
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/button_hisiadbstop"
         android:layout_alignBottom="@+id/button_hisiadbstop"
-        android:layout_toRightOf="@+id/button_chmod"
+        android:layout_toRightOf="@+id/button_hisiadbstop"
         android:text="海思跑马灯" />
+
+    <Button
+        android:id="@+id/button_hisi_wipe"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/button_hisiled"
+        android:layout_toRightOf="@+id/button_hisiled"
+        android:text="双清数据" />
 
 </RelativeLayout>

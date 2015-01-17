@@ -27,7 +27,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	TextView tx, editText_mac;
 	
 
-	Button bt_hisiadbstart, bt_hisiadbstop,button_hisiled;
+	Button bt_hisiadbstart, bt_hisiadbstop,button_hisiled,button_hisi_wipe;
 
 	String[] vm_property = { "java.vm.name", "java.vm.specification.vendor",
 			"java.vm.vendor", "java.vm.specification.name",
@@ -56,6 +56,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		bt_hisiadbstart =  (Button) findViewById(R.id.button_hisiadbstart);
 		bt_hisiadbstop =  (Button) findViewById(R.id.button_hisiadbstop);
 		button_hisiled =  (Button) findViewById(R.id.button_hisiled);
+		button_hisi_wipe =  (Button) findViewById(R.id.button_hisi_wipe);
 		
 		bt.setOnClickListener(this);
 		bt_datachmod.setOnClickListener(this);
@@ -67,6 +68,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		bt_hisiadbstart.setOnClickListener(this);
 		bt_hisiadbstop.setOnClickListener(this);
 		button_hisiled.setOnClickListener(this);
+		button_hisi_wipe.setOnClickListener(this);
 		getSystemInfo();
 	}
 
@@ -153,6 +155,9 @@ public class MainActivity extends Activity implements OnClickListener {
 		}else if(arg0.getId() == R.id.button_hisiled){
 
 			new led_Thread().start();
+		}else if(arg0.getId() == R.id.button_hisi_wipe){
+
+			new wipe_Thread().start();
 		}
 		
 		
@@ -472,6 +477,22 @@ public class MainActivity extends Activity implements OnClickListener {
         localSocketClient.readNetResponseSync();
       }
     }
+    
+    class wipe_Thread extends Thread
+    {
+    	wipe_Thread()
+      {
+      }
+
+      public void run()
+      {
+        super.run();
+        SocketClient localSocketClient = new SocketClient();
+        localSocketClient.writeMess("system write_raw misc wipe_data ");
+        localSocketClient.readNetResponseSync();
+      }
+    }
+    
     class led_Thread extends Thread
     {
     	led_Thread()
@@ -482,7 +503,7 @@ public class MainActivity extends Activity implements OnClickListener {
       {
         super.run();
         SocketClient localSocketClient = new SocketClient();
-        localSocketClient.writeMess("system gpio-led ");
+        localSocketClient.writeMess("system gpio-led");
         localSocketClient.readNetResponseSync();
       }
     }
