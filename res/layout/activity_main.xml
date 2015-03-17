@@ -114,4 +114,50 @@
         android:layout_toRightOf="@+id/button_hisiled"
         android:text="双清数据" />
 
+    <Button
+        android:id="@+id/button_himeidi_dev"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/button_hisi_wipe"
+        android:layout_alignBottom="@+id/button_hisi_wipe"
+        android:layout_marginLeft="26dp"
+        android:layout_toRightOf="@+id/button_hisi_wipe"
+        android:text="工程模式" />
+
+    <Button
+        android:id="@+id/button_show_notify"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/button_hisiadbstop"
+        android:layout_marginTop="67dp"
+        android:text="显示系统notifypannel" />
+
+    <Button
+        android:id="@+id/button_notify_one"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/button_show_notify"
+        android:layout_alignBottom="@+id/button_show_notify"
+        android:layout_toRightOf="@+id/button_hisiadbstop"
+        android:text="notify" />
+
+    <Button
+        android:id="@+id/button_clearall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/button_show_notify"
+        android:layout_alignBottom="@+id/button_show_notify"
+        android:layout_alignLeft="@+id/button_hisi_wipe"
+        android:text="clearall" />
+
+    <TextView
+        android:id="@+id/TextView01"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/button_notify_one"
+        android:layout_alignParentLeft="true"
+        android:layout_marginBottom="25dp"
+        android:text="通知栏" />
+
 </RelativeLayout>

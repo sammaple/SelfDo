@@ -6,18 +6,24 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Method;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends Activity implements OnClickListener {
 
@@ -27,8 +33,12 @@ public class MainActivity extends Activity implements OnClickListener {
 	TextView tx, editText_mac;
 	
 
-	Button bt_hisiadbstart, bt_hisiadbstop,button_hisiled,button_hisi_wipe;
+	Button bt_hisiadbstart, bt_hisiadbstop,button_hisiled,button_hisi_wipe,button_himeidi_dev,button_show_notify;
+	Button button_notify_one,button_clearall;
 
+    private NotificationManager m_NotificationManager;
+    private int notificationId =4001;
+	  
 	String[] vm_property = { "java.vm.name", "java.vm.specification.vendor",
 			"java.vm.vendor", "java.vm.specification.name",
 
@@ -57,6 +67,11 @@ public class MainActivity extends Activity implements OnClickListener {
 		bt_hisiadbstop =  (Button) findViewById(R.id.button_hisiadbstop);
 		button_hisiled =  (Button) findViewById(R.id.button_hisiled);
 		button_hisi_wipe =  (Button) findViewById(R.id.button_hisi_wipe);
+		button_himeidi_dev =  (Button) findViewById(R.id.button_himeidi_dev);
+		
+		button_show_notify = (Button) findViewById(R.id.button_show_notify);
+		button_notify_one = (Button) findViewById(R.id.button_notify_one);
+		button_clearall  = (Button) findViewById(R.id.button_clearall);
 		
 		bt.setOnClickListener(this);
 		bt_datachmod.setOnClickListener(this);
@@ -69,7 +84,15 @@ public class MainActivity extends Activity implements OnClickListener {
 		bt_hisiadbstop.setOnClickListener(this);
 		button_hisiled.setOnClickListener(this);
 		button_hisi_wipe.setOnClickListener(this);
+		button_himeidi_dev.setOnClickListener(this);
+		button_show_notify.setOnClickListener(this);
+		button_notify_one.setOnClickListener(this);
+		button_clearall.setOnClickListener(this);
+		
 		getSystemInfo();
+		
+
+	    m_NotificationManager = ((NotificationManager)getSystemService("notification"));
 	}
 
 	@Override
@@ -156,8 +179,15 @@ public class MainActivity extends Activity implements OnClickListener {
 
 			new led_Thread().start();
 		}else if(arg0.getId() == R.id.button_hisi_wipe){
-
 			new wipe_Thread().start();
+		}else if(arg0.getId() == R.id.button_himeidi_dev){
+			new dev_Thread().start();
+		}else if(arg0.getId() == R.id.button_show_notify){
+			showNotification();
+		}else if(arg0.getId() == R.id.button_notify_one){
+			addNewNotification();
+		}else if(arg0.getId() == R.id.button_clearall){
+			clearAllNotification();
 		}
 		
 		
@@ -506,5 +536,95 @@ public class MainActivity extends Activity implements OnClickListener {
         localSocketClient.writeMess("system gpio-led");
         localSocketClient.readNetResponseSync();
       }
+    }
+    
+    class dev_Thread extends Thread
+    {
+    	dev_Thread()
+      {
+      }
+
+      public void run()
+      {
+        super.run();
+        SocketClient localSocketClient = new SocketClient();
+        localSocketClient.writeMess("system am start  com.yunos.tv.devicemanager/.DeveloperMode");
+        localSocketClient.readNetResponseSync();
+      }
+    }
+    
+    
+    private void showNotification()
+    {
+		try {
+			/*Object service = getSystemService("statusbar");
+			Class<?> statusBarManager = Class
+					.forName("android.app.StatusBarManager");
+			int versionNum = android.os.Build.VERSION.SDK_INT;
+			Method expand = null;
+			if (versionNum < 17)
+				expand = statusBarManager.getMethod("expand");
+			else
+				expand = statusBarManager.getMethod("expandNotificationsPanel");
+	
+			if (expand != null) {
+				expand.setAccessible(true);
+				expand.invoke(service);
+			}*/
+	
+			Object service = getSystemService("statusbar");
+			/*Class<?> statusBarManager = Class
+					.forName("com.android.server.StatusBarManagerService");*/
+			Class<?> statusBarManager = Class
+					.forName("android.app.StatusBarManager");
+			
+			int versionNum = android.os.Build.VERSION.SDK_INT;
+			Method expand = null;
+			if (versionNum < 17)
+				expand = statusBarManager.getMethod("expand");
+			else
+				expand = statusBarManager.getMethod("expandNotificationsPanel");
+	
+			if (expand != null) {
+				expand.setAccessible(true);
+				expand.invoke(service);
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			Toast.makeText(getApplicationContext(), e.getMessage(),
+					Toast.LENGTH_LONG).show();
+			System.err.println("Ö´ÐÐ´íÎó");
+		}
+    }
+    
+    private void clearAllNotification()
+    {
+      m_NotificationManager.cancelAll();
+    }
+    
+    private void addNewNotification()
+    {
+      Notification localNotification = new Notification();
+      PendingIntent localPendingIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0);
+
+
+        localNotification.tickerText = ("Notification " + notificationId);
+        localNotification.defaults = (0x1 | localNotification.defaults);
+        localNotification.flags = (0x10 | localNotification.flags);
+        localNotification.icon = R.drawable.ic_launcher; 
+        
+        localNotification.setLatestEventInfo(this, "Notification " + notificationId, "Notification detail", localPendingIntent);
+        m_NotificationManager.notify(notificationId, localNotification);
+        notificationId = (1 + notificationId);
+        Log.e("TEST", "send notify");
+        //sendBroadcast();
+    }
+    
+    private void sendBroadcast()
+    {
+      Intent localIntent = new Intent("system.ui.notification.count");
+      localIntent.putExtra("nitify.count", this.notificationId);
+      sendBroadcast(localIntent);
     }
 }
