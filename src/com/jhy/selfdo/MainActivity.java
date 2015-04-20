@@ -6,12 +6,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -34,7 +36,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	
 
 	Button bt_hisiadbstart, bt_hisiadbstop,button_hisiled,button_hisi_wipe,button_himeidi_dev,button_show_notify;
-	Button button_notify_one,button_clearall;
+	Button button_notify_one,button_clearall,btn_vendorid;
 
     private NotificationManager m_NotificationManager;
     private int notificationId =4001;
@@ -73,6 +75,8 @@ public class MainActivity extends Activity implements OnClickListener {
 		button_notify_one = (Button) findViewById(R.id.button_notify_one);
 		button_clearall  = (Button) findViewById(R.id.button_clearall);
 		
+		btn_vendorid = (Button) findViewById(R.id.btn_vendorid);
+		
 		bt.setOnClickListener(this);
 		bt_datachmod.setOnClickListener(this);
 		button_adb.setOnClickListener(this);
@@ -88,6 +92,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		button_show_notify.setOnClickListener(this);
 		button_notify_one.setOnClickListener(this);
 		button_clearall.setOnClickListener(this);
+		btn_vendorid.setOnClickListener(this);
 		
 		getSystemInfo();
 		
@@ -188,6 +193,40 @@ public class MainActivity extends Activity implements OnClickListener {
 			addNewNotification();
 		}else if(arg0.getId() == R.id.button_clearall){
 			clearAllNotification();
+		}else if(arg0.getId() == R.id.btn_vendorid){
+			String vendorid = "";
+			Class localClass;
+			try {
+				localClass = Class.forName("com.yunos.settings.SystemInfoApiFw");
+			      Object localObject2 = localClass.getMethod("getInstance",new Class[] { Context.class }).invoke(null, new Object[] { this });
+			      Object localObject3 = localClass.getMethod("getVendorID").invoke(localObject2, new Object[0]);
+			      if (localObject3 != null)
+			      {
+			        String str = localObject3.toString();
+			        vendorid = str;
+			      }
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoSuchMethodException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+
+			Toast.makeText(getApplicationContext(), vendorid,
+					Toast.LENGTH_LONG).show();
+			
+		      Log.i("vendorid:", vendorid);
 		}
 		
 		
