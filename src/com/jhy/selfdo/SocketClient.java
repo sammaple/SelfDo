@@ -12,7 +12,7 @@ import android.util.Log;
 public class SocketClient {
 
     // Service Name
-    static final String SOCKET_NAME = "configserver";
+    static final String SOCKET_NAME = "jconfigserver";
 
     // The end of the command whether to perform
     boolean running = false;
@@ -60,6 +60,10 @@ public class SocketClient {
 
     }
 
+    /**
+     *  4bytes len head + loader //jhy
+     * @param s
+     */
     public void writeMess(String s) {
         try {
             Log.w("STR", s);
