@@ -2,6 +2,7 @@ package com.jhy.selfdo;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -15,15 +16,26 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.os.StatFs;
+import android.text.TextUtils;
+import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,10 +49,16 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	Button bt_hisiadbstart, bt_hisiadbstop,button_hisiled,button_hisi_wipe,button_himeidi_dev,button_show_notify;
 	Button button_notify_one,button_clearall,btn_vendorid;
+	Button button_media_info,button_bkup;
+	Button button_sdcard,button_routemac;
 
     private NotificationManager m_NotificationManager;
     private int notificationId =4001;
-	  
+    Context ctx = this;
+    
+    
+	//MediaPlayer mp = new MediaPlayer(); 
+
 	String[] vm_property = { "java.vm.name", "java.vm.specification.vendor",
 			"java.vm.vendor", "java.vm.specification.name",
 
@@ -76,11 +94,16 @@ public class MainActivity extends Activity implements OnClickListener {
 		button_clearall  = (Button) findViewById(R.id.button_clearall);
 		
 		btn_vendorid = (Button) findViewById(R.id.btn_vendorid);
+		button_sdcard = (Button) findViewById(R.id.button_sdcard);
+		button_routemac = (Button) findViewById(R.id.button_routemac);
+		button_media_info = (Button) findViewById(R.id.button_media_info);
+		button_bkup = (Button) findViewById(R.id.button_bkup);
 		
 		bt.setOnClickListener(this);
 		bt_datachmod.setOnClickListener(this);
 		button_adb.setOnClickListener(this);
-
+		button_bkup.setOnClickListener(this);
+		
 		button_mac.setOnClickListener(this);
 		button_sevenup.setOnClickListener(this);
 		
@@ -93,6 +116,9 @@ public class MainActivity extends Activity implements OnClickListener {
 		button_notify_one.setOnClickListener(this);
 		button_clearall.setOnClickListener(this);
 		btn_vendorid.setOnClickListener(this);
+		button_sdcard.setOnClickListener(this);
+		button_routemac.setOnClickListener(this);
+		button_media_info.setOnClickListener(this);
 		
 		getSystemInfo();
 		
@@ -222,15 +248,110 @@ public class MainActivity extends Activity implements OnClickListener {
 				e.printStackTrace();
 			}
 			
+			String uuid = getUUID();
+			int s =getSecureBootStatus(ctx);
+			
 
-			Toast.makeText(getApplicationContext(), vendorid,
+			Toast.makeText(getApplicationContext(), vendorid+","+uuid+","+s,
 					Toast.LENGTH_LONG).show();
 			
 		      Log.i("vendorid:", vendorid);
+		}else if(arg0.getId() == R.id.button_sdcard){
+			// 得到文件系统的信息：存储块大小，总的存储块数量，可用存储块数量
+			// 获取sd卡空间
+			// 存储设备会被分为若干个区块
+			// 每个区块的大小 * 区块总数 = 存储设备的总大小
+			// 每个区块的大小 * 可用区块的数量 = 存储设备可用大小
+			File path = Environment.getExternalStorageDirectory();
+			StatFs stat = new StatFs(path.getPath());
+			long blockSize;
+			long totalBlocks;
+			long availableBlocks;
+			// 由于API18（Android4.3）以后getBlockSize过时并且改为了getBlockSizeLong
+			// 因此这里需要根据版本号来使用那一套API
+
+
+			blockSize = stat.getBlockSize();
+			totalBlocks = stat.getBlockCount();
+			availableBlocks = stat.getAvailableBlocks();
+
+			// 利用formatSize函数把字节转换为用户等看懂的大小数值单位
+
+			String totalText = formatSize(blockSize * totalBlocks);
+			String availableText = formatSize(blockSize * availableBlocks);
+			tx.setText("SDCard总大小:\n" + totalText + "SDCard可用空间大小:\n" + availableText);
+		}else if(arg0.getId() == R.id.button_routemac){
+
+			new Thread(new getRouteWifiMacJob(this)).start();
+		}else if(arg0.getId() == R.id.button_media_info){
+			Intent i = new Intent(this,VideoSurface.class);
+			startActivity(i);
+			
+		}else if(arg0.getId() == R.id.button_bkup){
+            // 获得ImageView当前显示的图片  
+			ImageView imageView = (ImageView) findViewById(R.id.imageView1);
+			Bitmap bitmap1 = ((BitmapDrawable) imageView.getBackground()).getBitmap();  
+			
+			Matrix matrix = new Matrix();
+			Bitmap bitmap2 = Bitmap.createBitmap(bitmap1, 0, 0, bitmap1.getWidth(),  
+			bitmap1.getHeight(), matrix, true);  
+			//如果图片还没有回收，强制回收  
+			if (!bitmap1.isRecycled()) {  
+			bitmap1.recycle();  
+			}  
+			//根据原始位图和Matrix创建新的图片  
+			imageView.setImageBitmap(bitmap2);  
 		}
 		
 		
 
+	}
+	
+	public static String getUUID() {
+        try {
+            Class<?> cloudUUID = Class
+                    .forName("com.yunos.baseservice.clouduuid.CloudUUID");
+            Method m = cloudUUID.getMethod("getCloudUUID");
+            String result = (String) m.invoke(null);
+            //LogUtils.logDebug("result:" + result);
+            if (result.equals("false")) {
+                return "";
+            }
+            return result;
+        } catch (Exception e) {
+            //LogUtils.logError("getUUID is error", SystemInfo.class, e);
+        }
+        return "";
+    }   
+	
+	public static int getSecureBootStatus(Context context) {
+
+        int secure_boot = -1;
+        try {
+            Class<?> clazz = Class
+                    .forName("com.yunos.settings.SettingApiManager");
+            Method method = clazz.getMethod("getInfoCollectionUtils",
+                    Context.class);
+            Object infoCollectionObj = method.invoke(null, context);
+            Method getVendorMethod = infoCollectionObj.getClass().getMethod(
+                    "getSecBootStatus");
+            Object id = getVendorMethod.invoke(infoCollectionObj);
+            if (id != null) {
+                secure_boot = ((Integer) id).intValue();
+            }    
+        } catch (Exception e) { 
+            //LogUtils.logError("getSecBootStatus error", SystemInfo.class, e);
+        }    
+        //LogUtils.logDebug("secure_boot:" + secure_boot,SystemInfo.class);
+        return secure_boot;
+
+    }
+	
+	
+	//封装Formatter.formatFileSize方法，具体可以参考安卓的API
+	private String formatSize(long size)
+	{
+		return Formatter.formatFileSize(this, size);
 	}
 
 	Handler mhadler = new Handler() {
@@ -243,6 +364,75 @@ public class MainActivity extends Activity implements OnClickListener {
 			super.handleMessage(msg);
 		}
 	};
+	
+	  private static boolean isConnectedToRouter(Context paramContext)
+	  {
+	    ConnectivityManager localConnectivityManager = (ConnectivityManager)paramContext.getSystemService("connectivity");
+	    if (localConnectivityManager != null)
+	    {
+	      NetworkInfo localNetworkInfo = localConnectivityManager.getNetworkInfo(1);
+	      if ((localNetworkInfo != null) && (localNetworkInfo.isConnected())) {
+	        return true;
+	      }
+	    }
+	    return false;
+	  }
+
+	  private static String mRouterWifiMac = "";
+	  
+	  public static String getRouterWifiMac(Context paramContext)
+	  {
+		  mRouterWifiMac = "none";
+	    if (paramContext != null)
+	    {
+	      if (isConnectedToRouter(paramContext)) {
+		      WifiManager localWifiManager = (WifiManager)paramContext.getSystemService("wifi");
+		      if (localWifiManager != null)
+		      {
+		        WifiInfo localWifiInfo = localWifiManager.getConnectionInfo();
+		        if (localWifiInfo != null)
+		        {
+		          mRouterWifiMac = localWifiInfo.getBSSID();
+		          if (TextUtils.isEmpty(mRouterWifiMac)) {
+		            mRouterWifiMac = "NoValue";
+		          }
+		        }
+		      }
+	      }else{
+
+			  mRouterWifiMac = "no wifi ap!";
+	      }
+	    }
+	    return mRouterWifiMac;
+	  }
+	
+	class getRouteWifiMacJob implements Runnable {
+		Context paramContext;
+		
+		public getRouteWifiMacJob(Context paramContext) {
+			super();
+			this.paramContext = paramContext;
+		}
+
+		@Override
+		public void run() {
+			
+			while(true){
+				String s = getRouterWifiMac(paramContext);
+				Log.d("selfdo",s);
+				Message m = mhadler.obtainMessage(THREAD, s);
+				m.sendToTarget();
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+
+		}
+
+	}
 
 	class cleanjob implements Runnable {
 

@@ -20,11 +20,11 @@
 
     <TextView
         android:id="@+id/textView_judge"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/button_start"
         android:layout_marginTop="31dp"
-        android:text="" />
+        android:text="judge" />
     <Button
         android:id="@+id/button_chmod"
         android:layout_width="wrap_content"
@@ -55,7 +55,7 @@
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/textView_judge"
         android:layout_alignBottom="@+id/textView_judge"
-        android:layout_alignParentLeft="true"
+        android:layout_toRightOf="@+id/textView_judge"
         android:ems="10" 
         android:text="E8:BB:3D:5F:FC:33">
 
@@ -168,5 +168,49 @@
         android:layout_alignBottom="@+id/button_notify_one"
         android:layout_alignLeft="@+id/button_himeidi_dev"
         android:text="vendorid" />
+
+    <Button
+        android:id="@+id/button_sdcard"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/button_sevenup"
+        android:layout_toRightOf="@+id/button_sevenup"
+        android:text="SDCARD分区" />
+
+    <Button
+        android:id="@+id/button_routemac"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/btn_vendorid"
+        android:layout_alignBottom="@+id/btn_vendorid"
+        android:layout_marginLeft="17dp"
+        android:layout_toRightOf="@+id/button_himeidi_dev"
+        android:text="路由MAC_BSSID" />
+
+    <Button
+        android:id="@+id/button_media_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/button_mac"
+        android:layout_alignBottom="@+id/button_mac"
+        android:layout_toRightOf="@+id/button_start"
+        android:text="MediaInfo" />
+
+    <Button
+        android:id="@+id/button_bkup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/textView1"
+        android:layout_alignLeft="@+id/button_adb"
+        android:text="Image回收崩溃" />
+
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/button_bkup"
+        android:layout_toLeftOf="@+id/btn_vendorid"
+        android:background="@drawable/ic_launcher" 
+        android:src="@drawable/ic_launcher" />
 
 </RelativeLayout>
