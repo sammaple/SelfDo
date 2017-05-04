@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.jhy.selfdo"
     
-    android:versionCode="3"
-    android:versionName="1.3" >
+    android:versionCode="6"
+    android:versionName="1.6" >
     <!-- 
     android:sharedUserId="android.uid.system" -->
 
@@ -15,8 +15,9 @@
     <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    
-    
+    <uses-permission android:name="android.permission.READ_LOGS"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <!--uses-permission android:name="android.permission.WRITE_MEDIA_STORAGE"/-->
 
     <application
         android:allowBackup="true"

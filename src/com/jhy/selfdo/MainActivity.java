@@ -3,6 +3,8 @@ package com.jhy.selfdo;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -19,12 +21,14 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.DropBoxManager;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
@@ -41,22 +45,62 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity implements OnClickListener {
 
-	protected static final int THREAD = 0;
-	Button bt;
+	protected static final int THREAD = 0 ;
+	Button bt,button_ill;
 	Button bt_datachmod, button_adb, button_mac,button_sevenup;
 	TextView tx, editText_mac;
-	
 
+	private static final String RK3128_LED_NAME = "/sys/devices/rockchip_leds_gpio.17/led_ctl";
+    private static final String RK_LED_ON = "on", RK_LED_OFF = "off";
+    private static File ledFile = new File(RK3128_LED_NAME);
+    
+    private static final String  mPathstr      = "/sys/class/gpio_sw/P";
+    private static final String  mDataName     = "/data";
+    private static final String  mPullName     = "/pull";
+    private static final String  mDrvLevelName = "/drv_level";
+    private static final String  mMulSelName   = "/mul_sel";
+    private static final String  TAG ="jhy";
+
+    private static final String NORMAL_LED_PATH   = "/sys/class/gpio_sw/normal_led";
+    private static final String STANDBY_LED_PATH  = "/sys/class/gpio_sw/standby_led";
+    
 	Button bt_hisiadbstart, bt_hisiadbstop,button_hisiled,button_hisi_wipe,button_himeidi_dev,button_show_notify;
 	Button button_notify_one,button_clearall,btn_vendorid;
 	Button button_media_info,button_bkup;
 	Button button_sdcard,button_routemac;
+	Button button_dropbox,button_aw_led_normal,button_aw_led_standby,button_rk_led;
+	
+	String rk_status=RK_LED_ON;
+	Boolean aw_led_n=true;
+
+	Boolean aw_led_s=false;
+	
+	private FinalCountDownTimer finalCountDownTimer=null;
 
     private NotificationManager m_NotificationManager;
     private int notificationId =4001;
     Context ctx = this;
     
+    /*static {
+         System.loadLibrary("gpio_jni");
+         nativeInit();
+    }*/
     
+    private static native void nativeInit();
+    private static native int nativeWriteGpio(String path, String value);
+    private static native int nativeReadGpio(String path);
+
+    
+	public static int setNormalLedOn(boolean on){
+	    String dataPath = NORMAL_LED_PATH + mDataName;
+	    return nativeWriteGpio(dataPath, on?"1":"0");
+	}
+
+	public static int setStandbyLedOn(boolean on){
+	    String dataPath = STANDBY_LED_PATH + mDataName;
+	    return nativeWriteGpio(dataPath, on?"1":"0");
+	}
+	
 	//MediaPlayer mp = new MediaPlayer(); 
 
 	String[] vm_property = { "java.vm.name", "java.vm.specification.vendor",
@@ -71,6 +115,17 @@ public class MainActivity extends Activity implements OnClickListener {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		ClassLoader classLoader = getClassLoader();        
+		if (classLoader != null){
+		Log.i(TAG, "[onCreate] classLoader : " + classLoader.toString());           
+				while (classLoader.getParent()!=null){
+	            classLoader = classLoader.getParent();
+	            Log.i(TAG,"[onCreate] classLoader : " + classLoader.toString());
+	        }
+	    }
+
+		
 		setContentView(R.layout.activity_main);
 
 		bt = (Button) findViewById(R.id.button_start);
@@ -98,6 +153,11 @@ public class MainActivity extends Activity implements OnClickListener {
 		button_routemac = (Button) findViewById(R.id.button_routemac);
 		button_media_info = (Button) findViewById(R.id.button_media_info);
 		button_bkup = (Button) findViewById(R.id.button_bkup);
+		button_dropbox = (Button) findViewById(R.id.button_dropbox);
+		button_aw_led_normal = (Button) findViewById(R.id.button_aw_led_normal);
+		button_aw_led_standby = (Button) findViewById(R.id.button_aw_led_standby);
+		button_rk_led = (Button) findViewById(R.id.button_rk_led);
+		button_ill = (Button) findViewById(R.id.button_ill);
 		
 		bt.setOnClickListener(this);
 		bt_datachmod.setOnClickListener(this);
@@ -119,6 +179,11 @@ public class MainActivity extends Activity implements OnClickListener {
 		button_sdcard.setOnClickListener(this);
 		button_routemac.setOnClickListener(this);
 		button_media_info.setOnClickListener(this);
+		button_dropbox.setOnClickListener(this);
+		button_aw_led_normal.setOnClickListener(this);
+		button_aw_led_standby.setOnClickListener(this);
+		button_rk_led.setOnClickListener(this);
+		button_ill.setOnClickListener(this);
 		
 		getSystemInfo();
 		
@@ -199,9 +264,35 @@ public class MainActivity extends Activity implements OnClickListener {
 				e.printStackTrace();
 			}
 		}else if(arg0.getId() == R.id.button_sevenup){
-			 Uri uri = Uri.parse("http://www.upseven.net:8082/wordpress");  
-			 Intent it = new Intent(Intent.ACTION_VIEW, uri);  
-			 startActivity(it);
+			 //Uri uri = Uri.parse("http://www.upseven.net:8082/wordpress");  
+			 //Intent it = new Intent(Intent.ACTION_VIEW, uri);  
+			 //startActivity(it);
+			 Log.d("jhy",Environment.getExternalStorageDirectory().toString());
+			 Log.d("jhy",Environment.getExternalStorageDirectory().getPath());
+			 Log.d("jhy",Environment.getExternalStorageDirectory().getAbsolutePath());
+			 
+			 File file = new File(Environment.getExternalStorageDirectory(), "/jhy.txt");
+
+				FileOutputStream out;
+				try {
+					out = new FileOutputStream(file);
+					out.write("111".getBytes());
+					out.flush();
+					out.close();
+				} catch (FileNotFoundException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				ClassLoader classLoader = getClassLoader();
+				Log.v("jhy", "classLoader = " + classLoader.toString());
+				String ldpath = System.getProperty("java.library.path");
+				Log.v("jhy", "ldpath = " + ldpath);
+
+			 
 		}else if(arg0.getId() == R.id.button_hisiadbstart){
 			new adb_start_Thread().start();
 		}else if(arg0.getId() == R.id.button_hisiadbstop){
@@ -301,10 +392,86 @@ public class MainActivity extends Activity implements OnClickListener {
 			}  
 			//根据原始位图和Matrix创建新的图片  
 			imageView.setImageBitmap(bitmap2);  
+		}else if(arg0.getId() == R.id.button_dropbox){
+			
+			DropBoxManager dm = (DropBoxManager)getSystemService(Context.DROPBOX_SERVICE);
+			DropBoxManager.Entry e0 = dm.getNextEntry("SYSTEM_RECOVERY_LOG", 0);
+			if(e0 == null){
+				Log.d("==jhy==", "e0 null");
+				return;
+			}
+			Log.d("==jhy==", "e0:"+e0.getTimeMillis());
+
+			DropBoxManager.Entry e1 = dm.getNextEntry("SYSTEM_RECOVERY_LOG", e0.getTimeMillis());
+			while (e1!=null) {
+				Log.d("==jhy==", "e1:"+e1.getTimeMillis());
+				e0.close();
+				e0 = e1;
+				e1 = dm.getNextEntry("SYSTEM_RECOVERY_LOG", e0.getTimeMillis());
+				
+			}
+			
+			
+			
+			String txt = e0.getText(128*1024);
+			e0.close();
+			
+	        
+		}else if(arg0.getId() == R.id.button_aw_led_normal){
+			/*if(aw_led_n.equals(true)){
+
+				aw_led_n = false;
+			}else{
+
+				aw_led_n = true;
+			}
+			setNormalLedOn(aw_led_n);*/
+			
+			startDowncount();
+		}else if(arg0.getId() == R.id.button_aw_led_standby){
+			if(aw_led_s.equals(true)){
+
+				aw_led_s = false;
+			}else{
+
+				aw_led_s = true;
+			}
+
+			setStandbyLedOn(aw_led_s);
+			
+		}else if(arg0.getId() == R.id.button_rk_led){
+			try {
+				FileOutputStream out=new FileOutputStream(ledFile);
+				if(rk_status.equals(RK_LED_ON)){
+
+					rk_status = RK_LED_OFF;
+				}else{
+
+					rk_status = RK_LED_ON;
+				}
+				out.write(rk_status.getBytes());
+				out.flush();
+				out.close();
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}else if(arg0.getId() == R.id.button_ill){
+			File f = null;
+			f.getAbsoluteFile();
 		}
 		
 		
 
+	}
+	
+	public String testAudio(){
+		AudioManager audiomanage = (AudioManager)ctx.getSystemService(Context.AUDIO_SERVICE);
+		audiomanage.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+		return null;
 	}
 	
 	public static String getUUID() {
@@ -783,7 +950,14 @@ public class MainActivity extends Activity implements OnClickListener {
     }
     
     
-    private void showNotification()
+    
+    @Override
+	public void onWindowFocusChanged(boolean hasFocus) {
+		// TODO Auto-generated method stub
+    	Log.d("===start===", "hasFocus : "+hasFocus);
+		super.onWindowFocusChanged(hasFocus);
+	}
+	private void showNotification()
     {
 		try {
 			/*Object service = getSystemService("statusbar");
@@ -855,5 +1029,36 @@ public class MainActivity extends Activity implements OnClickListener {
       Intent localIntent = new Intent("system.ui.notification.count");
       localIntent.putExtra("nitify.count", this.notificationId);
       sendBroadcast(localIntent);
+    }
+    
+    public void startDowncount() {
+    	Log.d(TAG, "startDowncount task=" + finalCountDownTimer);
+        //if(null == finalCountDownTimer) {
+            finalCountDownTimer = new FinalCountDownTimer(15 * 1000 , 100);
+            finalCountDownTimer.start();
+        //}
+    }
+    
+    private final class FinalCountDownTimer extends android.os.CountDownTimer{
+
+		public FinalCountDownTimer(long millisInFuture, long countDownInterval) {
+			super(millisInFuture, countDownInterval);
+			// TODO Auto-generated constructor stub
+		}
+
+		@Override
+		public void onFinish() {
+			// TODO Auto-generated method stub
+
+			Log.d(this.getClass().getName(), "done!");
+		}
+
+		@Override
+		public void onTick(long arg0) {
+			// TODO Auto-generated method stub
+			Log.d(this.getClass().getName(), "left time:"+arg0);
+			
+		}
+    	
     }
 }

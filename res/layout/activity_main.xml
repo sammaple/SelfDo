@@ -213,4 +213,46 @@
         android:background="@drawable/ic_launcher" 
         android:src="@drawable/ic_launcher" />
 
+    <Button
+        android:id="@+id/button_dropbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/button_routemac"
+        android:text="dropbox" />
+
+    <Button
+        android:id="@+id/button_aw_led_normal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/button_hisiadbstart"
+        android:layout_alignLeft="@+id/button_routemac"
+        android:text="全志LED_N" />
+
+    <Button
+        android:id="@+id/button_aw_led_standby"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/button_show_notify"
+        android:layout_marginLeft="20dp"
+        android:layout_toRightOf="@+id/button_aw_led_normal"
+        android:text="全志LED_S" />
+
+    <Button
+        android:id="@+id/button_rk_led"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/button_aw_led_normal"
+        android:layout_marginLeft="24dp"
+        android:layout_toRightOf="@+id/button_aw_led_standby"
+        android:text="RKLED" />
+
+    <Button
+        android:id="@+id/button_ill"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignRight="@+id/button_show_notify"
+        android:layout_below="@+id/button_show_notify"
+        android:text="停止运行" />
+
 </RelativeLayout>

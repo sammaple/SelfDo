@@ -76,7 +76,9 @@ public class VideoSurface extends Activity implements OnCompletionListener,OnErr
 		
 		//然后指定需要播放文件的路径，初始化MediaPlayer
 		//String dataPath = Environment.getExternalStorageDirectory().getPath()+"/Test_Movie.m4v";
-		String dataPath = "http://shuyu-transcode-public.cn-hangzhou.oss-pub.aliyun-inc.com/switch-stream/pingfan_265.m3u8";
+		//String dataPath = "http://shuyu-transcode-public.cn-hangzhou.oss-pub.aliyun-inc.com/switch-stream/pingfan_265.m3u8";
+		String dataPath = "http://selinux.cn-hangzhou.oss-pub.aliyun-inc.com/media/DISCONTINUITY/1_aacyizhi.m3u8";
+		
 		try {
 			player.setDataSource(dataPath);
 			Log.v("Next:::", "surfaceDestroyed called");
